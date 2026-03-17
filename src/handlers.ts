@@ -12,14 +12,25 @@ export class Handlers {
     public async getGraph(req: Request, res: Response) {
         try {
             const utils = new Utilities(req.query);
-
-            const fetcher = new Fetcher(utils.username);
             const queryOptions = utils.queryOptions();
-            const fetchCalendarData = await fetcher.fetchContributions(
-                utils.queryOptions().days,
-                queryOptions.from,
-                queryOptions.to,
-            );
+
+            let fetchCalendarData: UserDetails | string;
+            if (utils.username) {
+                // Single-user path: ?username=foo uses TOKEN env var
+                const fetcher = new Fetcher(utils.username);
+                fetchCalendarData = await fetcher.fetchContributions(
+                    queryOptions.days,
+                    queryOptions.from,
+                    queryOptions.to,
+                );
+            } else {
+                // Multi-user path: aggregates all TOKEN_* env vars
+                fetchCalendarData = await Fetcher.fetchAllContributions(
+                    queryOptions.days,
+                    queryOptions.from,
+                    queryOptions.to,
+                );
+            }
 
             const { finalGraph, header } = await utils.buildGraph(fetchCalendarData);
             utils.setHttpHeader(res, header.maxAge);

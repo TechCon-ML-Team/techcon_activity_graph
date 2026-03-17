@@ -8,7 +8,7 @@ import { QueryOption, ParsedQs, UserDetails } from './interfaces/interface';
 export class Utilities {
     public username: string;
     constructor(private readonly queryString: ParsedQs) {
-        this.username = String(this.queryString.username);
+        this.username = this.queryString.username ? String(this.queryString.username) : '';
     }
 
     private getColors() {

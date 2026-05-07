@@ -8,6 +8,7 @@ on:
         branches: [main]
     pull_request:
         branches: [main]
+    workflow_dispatch:
 
 jobs:
     build:
@@ -27,3 +28,28 @@ jobs:
                   node-version: ${{ matrix.node-version }}
             - run: npm ci
             - run: npm test
+
+    notify-hub:
+        name: Notify TechCon Hub
+        runs-on: ubuntu-latest
+        needs: build
+        if: needs.build.result == 'success' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+        steps:
+            - name: Dispatch knowledge sync
+              uses: actions/github-script@60a0d83039f74a4f479b5f76fecfa5d9aca7ed73  # v7
+              with:
+                  github-token: ${{ secrets.TECHCON_HUB_DISPATCH_TOKEN }}
+                  script: |
+                      await github.rest.repos.createDispatchEvent({
+                        owner: 'TechCon-ML-Team',
+                        repo: 'techcon_hub',
+                        event_type: 'knowledge-sync-requested',
+                        client_payload: {
+                          repo_name: '${{ github.event.repository.name }}',
+                          source_workflow: '${{ github.workflow }}',
+                          source_event: '${{ github.event_name }}',
+                          source_ref: '${{ github.ref }}',
+                          source_sha: '${{ github.sha }}',
+                          source_run_id: '${{ github.run_id }}'
+                        }
+                      });

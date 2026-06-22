@@ -1,0 +1,1 @@
+@.scaffold/CLAUDE.md

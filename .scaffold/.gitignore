@@ -1,0 +1,6 @@
+# Scaffold runtime data — не коммитить
+runtime/mimocode/
+runtime/kernel-config/
+runtime/migrations/
+reports/
+checkpoints/

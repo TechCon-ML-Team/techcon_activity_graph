@@ -1,0 +1,24 @@
+{
+  "$schema": "scaffold.project/v1",
+  "extends": "global",
+  "project": {
+    "name": "github-readme-activity-graph",
+    "language": "ru",
+    "mode": "controlled"
+  },
+  "kernel": {
+    "type": "scaffold-kernel",
+    "config": ".scaffold/runtime/kernel.json"
+  },
+  "safety": {
+    "policy": ".scaffold/safety/policy.json",
+    "profile": "controlled"
+  },
+  "s2tdd": {
+    "enabled": true,
+    "policy": ".scaffold/s2tdd/policy.json"
+  },
+  "providers": {
+    "note": "Провайдер настраивается в TUI: Claude (API/subscription), OpenRouter, OpenAI и др."
+  }
+}

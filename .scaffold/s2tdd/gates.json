@@ -1,0 +1,73 @@
+{
+  "version": "1",
+  "description": "S2TDD gate definitions. Add new gates here without changing TypeScript code.",
+  "gates": [
+    {
+      "id": "G0",
+      "phase": "P0",
+      "description": "Задача создана: taskId и taskName зафиксированы",
+      "requiredArtifact": null,
+      "blocksImplementation": false,
+      "checkType": "task-identity"
+    },
+    {
+      "id": "G1",
+      "phase": "P1",
+      "description": "Контекст исследован: context.md существует",
+      "requiredArtifact": "context.md",
+      "blocksImplementation": false
+    },
+    {
+      "id": "G2",
+      "phase": "P2",
+      "description": "Spec написан: spec.md существует и не пустой",
+      "requiredArtifact": "spec.md",
+      "blocksImplementation": true
+    },
+    {
+      "id": "G3",
+      "phase": "P3",
+      "description": "Критерии приёмки определены: acceptance.md существует",
+      "requiredArtifact": "acceptance.md",
+      "blocksImplementation": true
+    },
+    {
+      "id": "G4",
+      "phase": "P4",
+      "description": "Test plan написан: test-plan.md существует",
+      "requiredArtifact": "test-plan.md",
+      "blocksImplementation": true
+    },
+    {
+      "id": "G5",
+      "phase": "P5",
+      "description": "RED тесты написаны или исключение задокументировано",
+      "requiredArtifact": null,
+      "blocksImplementation": true,
+      "allowedException": true,
+      "checkType": "phase-complete",
+      "checkPhase": "P5"
+    },
+    {
+      "id": "G7",
+      "phase": "P7",
+      "description": "Верификация: тесты GREEN или known failures задокументированы",
+      "requiredArtifact": "verification.md",
+      "blocksImplementation": false
+    },
+    {
+      "id": "G8",
+      "phase": "P8",
+      "description": "Review пройден: verification.md существует",
+      "requiredArtifact": "verification.md",
+      "blocksImplementation": false
+    },
+    {
+      "id": "G9",
+      "phase": "P9",
+      "description": "Handoff готов: handoff.md существует, phase history полная",
+      "requiredArtifact": "handoff.md",
+      "blocksImplementation": false
+    }
+  ]
+}

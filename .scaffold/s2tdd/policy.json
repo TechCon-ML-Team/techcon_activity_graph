@@ -1,0 +1,18 @@
+{
+  "version": "1",
+  "gateBeforeImplementation": [
+    "G2",
+    "G3",
+    "G4",
+    "G5"
+  ],
+  "allowedExceptions": [
+    "documentation-only",
+    "pure-research",
+    "spike-prototype",
+    "emergency-patch",
+    "infra-env-validation"
+  ],
+  "approvalMode": "human",
+  "maxPhaseRetries": 3
+}

@@ -43,3 +43,12 @@ Prime — стратегический агент. Не объясняй ему 
 - Язык: TypeScript / Express
 - Пакеты: npm
 - Тесты: Jest (`npx jest`)
+
+## Нативное операционное знание
+
+Следующие файлы содержат данные об инфраструктуре и операционных процедурах проекта
+(указатели и алиасы, без секретов). Стандарт: `docs/NATIVE_PROCESS_STANDARD.md` в pi-scaffold.
+
+@.scaffold/knowledge/native-processes/infra-topology.md
+@.scaffold/knowledge/native-processes/access-map.md
+@.scaffold/knowledge/native-processes/runbooks/README.md

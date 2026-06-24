@@ -1,0 +1,17 @@
+{
+  "schema_version": "1",
+  "repo": "techcon_activity_graph",
+  "type": "service",
+  "contour": "scaffold",
+  "status": "active",
+  "surfaces": {
+    "public_api": null,
+    "doc_standard": null,
+    "knowledge_base": null
+  },
+  "knowledge": {
+    "runbooks": ".scaffold/knowledge/native-processes/runbooks/",
+    "infra_topology": ".scaffold/knowledge/native-processes/infra-topology.md",
+    "access_map": ".scaffold/knowledge/native-processes/access-map.md"
+  }
+}

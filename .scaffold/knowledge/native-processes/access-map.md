@@ -1,25 +1,34 @@
-# Карта доступа
+# Карта доступа — TechCon Activity Graph
 
-> Только имена алиасов и структура — без значений токенов, IP-адресов, ключей.
-> Стандарт: docs/NATIVE_PROCESS_STANDARD.md в pi-scaffold (РК-7).
+> Только публичные URL и точки доступа. Без ключей и токенов.
+> Последнее обновление: 2026-06-25.
 
-## SSH-алиасы (добавить в ~/.ssh/config)
+## SSH-алиасы
 
-```
-# PLACEHOLDER: добавить алиасы подключения к серверам репо
-# Host <имя>
-#     HostName <IP или DNS-имя>
-#     User     <системный пользователь>
-```
+Сервис развёрнут на Vercel — SSH-доступ к серверам не требуется.
+Для управления деплоем используется Vercel CLI или Vercel dashboard.
 
-## Точки доступа
+## Публичные URL
 
-| Имя | Значение | Примечание |
+| Среда | URL | Примечание |
 |---|---|---|
-| PLACEHOLDER | — | — |
+| Продакшн | ☐ Vercel production URL (уточнить в Vercel dashboard) | автоматически из `main` |
+| Preview | ☐ Vercel preview URL (генерируется при PR/push) | |
+| API `/graph` | `<vercel-url>/graph` | основной endpoint |
+| API `/data` | `<vercel-url>/data` | data endpoint |
 
-## PLACEHOLDER: Что заполнить
+> Canonical URL уточняется в Vercel dashboard проекта `techcon_activity_graph`.
 
-- [ ] SSH-алиасы для серверов (без ключей и паролей)
-- [ ] URL сервисов (продакшн, staging)
-- [ ] Закрытое хранилище секретов (где искать ключи)
+## Локальный запуск
+
+```bash
+npm install
+npm run dev:start   # порт 5100
+```
+
+## Секреты (где искать — не здесь)
+
+| Переменная | Где хранится |
+|---|---|
+| GitHub token (если используется) | Vercel environment variables (dashboard) |
+| Vercel deploy token | GitHub Actions secrets (если есть CI деплой) |

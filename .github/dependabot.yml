@@ -1,4 +1,10 @@
 version: 2
+# Политика (обновлено по явному указанию владельца): Dependabot НЕ открывает
+# routine version-bump PR по умолчанию — полный ignore-all ниже. Ручная
+# проверка конкретного пакета — по явному запросу владельца (временно
+# ослабить ignore для этого пакета в PR). Security-патчи через отдельную
+# фичу GitHub "Dependabot security updates" этим НЕ затрагиваются — они
+# продолжают приходить как обычно.
 updates:
   - package-ecosystem: "npm"
     directory: "/"
@@ -7,3 +13,9 @@ updates:
     open-pull-requests-limit: 3
     labels:
       - "dependencies"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-patch"
+          - "version-update:semver-minor"
+          - "version-update:semver-major"

@@ -1,0 +1,35 @@
+# Ручной ревью для Dependabot PR.
+# Dependabot продолжает открывать PR (видимость устаревших зависимостей сохраняется),
+# но авто-мерджа нет и не будет: любой dependency-bump PR обязан пройти явную
+# верификацию человеком — этот джоб падает, пока на PR не поставлен лейбл
+# 'manually-verified'. См. cluster K2, quality wave 2026-07-07.
+name: Dependency review gate
+
+on:
+    pull_request:
+        types: [opened, reopened, synchronize, labeled, unlabeled]
+        branches: [main]
+
+jobs:
+    dependency-review-gate:
+        name: dependency-review-gate
+        runs-on: ubuntu-latest
+        # Гейт применяется только к PR из веток Dependabot (dependabot/**).
+        if: startsWith(github.event.pull_request.head.ref, 'dependabot/')
+        steps:
+            - name: Check for 'manually-verified' label
+              uses: actions/github-script@60a0d83039f74a4f479b5f76fecfa5d9aca7ed73 # v7
+              with:
+                  script: |
+                      const labels = context.payload.pull_request.labels.map(l => l.name);
+                      if (!labels.includes('manually-verified')) {
+                        core.setFailed(
+                          "Ручной ревью обязателен: это PR от Dependabot (dependency bump). " +
+                          "Авто-мерджа в этом репозитории нет — прежде чем мержить, ревьюер " +
+                          "должен вручную проверить changelog/breaking changes и добавить " +
+                          "лейбл 'manually-verified' на этот PR. После добавления лейбла " +
+                          "перезапустите проверку (re-run) или дождитесь события 'labeled'."
+                        );
+                        return;
+                      }
+                      core.info("Лейбл 'manually-verified' найден — ручная проверка пройдена.");

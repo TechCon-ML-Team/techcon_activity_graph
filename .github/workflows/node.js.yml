@@ -38,7 +38,7 @@ jobs:
             - name: Dispatch knowledge sync
               uses: actions/github-script@60a0d83039f74a4f479b5f76fecfa5d9aca7ed73  # v7
               with:
-                  github-token: ${{ secrets.TECHCON_HUB_DISPATCH_TOKEN }}
+                  github-token: ${{ secrets.TECHCON_HUB_DISPATCH_TOKEN || secrets.TECHCON_HUB_TOKEN }}
                   script: |
                       await github.rest.repos.createDispatchEvent({
                         owner: 'TechCon-ML-Team',

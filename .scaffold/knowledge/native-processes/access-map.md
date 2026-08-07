@@ -12,8 +12,8 @@
 
 | Среда | URL | Примечание |
 |---|---|---|
-| Продакшн | ☐ Vercel production URL (уточнить в Vercel dashboard) | автоматически из `main` |
-| Preview | ☐ Vercel preview URL (генерируется при PR/push) | |
+| Продакшн | `https://techcon-activity-graph.vercel.app` | автоматически из `main`; стабильный алиас, проверено живьём 2026-08-07 |
+| Preview | адрес развёртывания вида `…-<hash>-<owner>.vercel.app` | генерируется при PR/push, меняется каждый раз; закреплять в документации нельзя |
 | API `/graph` | `<vercel-url>/graph` | основной endpoint |
 | API `/data` | `<vercel-url>/data` | data endpoint |
 

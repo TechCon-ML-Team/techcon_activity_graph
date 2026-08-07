@@ -38,11 +38,17 @@
 
 | Точка | URL | Примечание |
 |---|---|---|
-| Продакшн | ☐ Vercel-assigned domain (уточнить в Vercel dashboard) | |
+| Продакшн | `https://techcon-activity-graph.vercel.app` | стабильный алиас проекта; проверено живьём 2026-08-07 |
 | API `/graph` | `<vercel-url>/graph` | GitHub activity graph endpoint |
 | API `/data` | `<vercel-url>/data` | Data endpoint |
 
-> Точный Vercel production URL уточняется в Vercel dashboard (проект привязан к этому репо).
+> Адрес установлен по Deployments API GitHub и проверен живьём: корень отдаёт
+> заголовок приложения, `/graph?username=…` — SVG.
+>
+> **Не используй адрес конкретного развёртывания** вида
+> `…-kb0r5nriw-pyramidheadsharks-projects.vercel.app` — он меняется при каждом
+> деплое и отдаёт `302` на аутентификацию Vercel. Публично отвечает (`200`)
+> только стабильный алиас выше.
 
 ## Внешние зависимости
 

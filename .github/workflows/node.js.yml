@@ -29,27 +29,20 @@ jobs:
             - run: npm ci
             - run: npm test
 
-    notify-hub:
-        name: Notify TechCon Hub
-        runs-on: ubuntu-latest
-        needs: build
-        if: needs.build.result == 'success' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
-        steps:
-            - name: Dispatch knowledge sync
-              uses: actions/github-script@60a0d83039f74a4f479b5f76fecfa5d9aca7ed73  # v7
-              with:
-                  github-token: ${{ secrets.TECHCON_HUB_DISPATCH_TOKEN || secrets.TECHCON_HUB_TOKEN }}
-                  script: |
-                      await github.rest.repos.createDispatchEvent({
-                        owner: 'TechCon-ML-Team',
-                        repo: 'techcon_hub',
-                        event_type: 'knowledge-sync-requested',
-                        client_payload: {
-                          repo_name: '${{ github.event.repository.name }}',
-                          source_workflow: '${{ github.workflow }}',
-                          source_event: '${{ github.event_name }}',
-                          source_ref: '${{ github.ref }}',
-                          source_sha: '${{ github.sha }}',
-                          source_run_id: '${{ github.run_id }}'
-                        }
-                      });
+    # ⚠ ЗАДАНИЕ `notify-hub` УДАЛЕНО 14.08.2026, И ЭТО НЕ ПОТЕРЯ ФУНКЦИИ.
+    #
+    # Оно не отработало НИ РАЗУ: 0 успешных прогонов из 13 в истории. Две
+    # причины, каждой достаточно:
+    #
+    #   1. `secrets.TECHCON_HUB_DISPATCH_TOKEN` — секрет уровня организации с
+    #      видимостью «только приватные репозитории», а этот репозиторий
+    #      публичный. Значение приезжало пустым, то есть диспатч ушёл бы под
+    #      пустым токеном даже при исправном действии.
+    #   2. Пин `actions/github-script@60a0d83…` указывает на несуществующий
+    #      коммит — прогон падал с `Unable to resolve action`.
+    #
+    # Свежесть состояния этого репозитория у хаба и так есть: суточный слепок
+    # `techcon_hub/scripts/repo_state.py` опрашивает все репозитории
+    # организации через REST и с 14.08 публикует их здоровье метриками
+    # (`repo_ci_health`). Диспатч дублировал бы этот путь — и, в отличие от
+    # него, не работал.

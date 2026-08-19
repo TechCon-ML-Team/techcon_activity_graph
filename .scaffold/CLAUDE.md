@@ -56,7 +56,7 @@ Prime — стратегический агент. Не объясняй ему 
 <!-- techcon-hub:agent-infra-source:begin -->
 ## Источник правды об инфраструктуре
 
-> Этот раздел раздаётся автоматически из `techcon_hub/knowledge/AGENT-INFRA-SOURCE.md`.
+> Этот раздел раздаётся автоматически из `techcon_hub/canon/AGENT-INFRA-SOURCE.md`.
 > Правки вносить там, локальные будут затёрты следующей раздачей.
 
 **Единственный источник правды об инфраструктуре — `techcon_infra_yac/INFRA.yaml`.**
@@ -85,7 +85,7 @@ Prime — стратегический агент. Не объясняй ему 
 | какие машины есть, их адреса и роли | `techcon_infra_yac/INFRA.yaml` |
 | что работает **прямо сейчас** | замер: `yc compute instance list`, `systemctl`, `docker ps` на самой машине |
 | куда ходит трафик | файл маршрутизации на входном узле, не память |
-| что случилось раньше | `techcon_hub/knowledge/`, слепок `knowledge/ecosystem/repo-state.json` |
+| что случилось раньше | `techcon_hub/canon/_archive/knowledge-legacy-2026-08-19/`, слепок `canon/ecosystem/repo-state.json` |
 
 **Замер делается оттуда, откуда ходит потребитель.** Проба «изнутри контейнера»
 и проба «с хоста» отвечают на разные вопросы; пустой ответ означает отказ
@@ -95,7 +95,7 @@ Prime — стратегический агент. Не объясняй ему 
 <!-- techcon-hub:deploy-contract:begin -->
 # Контракт выкладки для агентов: dev → проверка → prod
 
-> **Это не второй стандарт.** Полный стандарт — `techcon_hub/knowledge/standards/devprod-standard.md`
+> **Это не второй стандарт.** Полный стандарт — `techcon_hub/canon/_archive/knowledge-legacy-2026-08-19/standards/devprod-standard.md`
 > (модель веток, sha-теги, deploy-маркеры, health-гейты, auto-rollback, deploy-lock,
 > политика main, верификация на ВМ). Здесь — раздаваемая в репозитории выжимка
 > для агентов плюс три правила, которых в стандарте не было.
@@ -169,7 +169,7 @@ merge в main мгновенно катится в прод во всех сер
 | `techcon_defectoscopy` | `push: develop` | ручной | нет |
 | `techcon_defects_stt_plus` | `push: develop` | **внутри `ci.yml`** | нет |
 | `techcon_demos` | `workflow_run` | **автоматически** | нет |
-| `techcon_education_assistant` | **нет контура** | ручной | нет |
+| `techcon_education_assistant` | компоуз-стек на той же машине (не ветка) | ручной | нет |
 | `techcon_passports` | `workflow_run` | ручной | нет |
 | `techcon_reports` | `workflow_run` | **автоматически** | нет |
 | `techcon_infra_monitoring` | — | внутри `ci.yml` | нет |

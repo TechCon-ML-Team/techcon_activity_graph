@@ -1,0 +1,33 @@
+name: Страж прямого push в main
+
+# Б4 плана Д (25.08.2026) — раскатка на управляемые репозитории. Стаб вызывает
+# reusable workflow из techcon_hub; вся логика там, здесь только вызов + права.
+#
+# ⚠ КРИТИЧНО: явный блок permissions ниже ОБЯЗАТЕЛЕН (G61, план Д, 25.08.2026).
+# default_workflow_permissions этой организации — "read"; без явного блока
+# GitHub отказывает в scheduling самого job вызываемого workflow
+# (startup_failure), если вызываемый workflow запрашивает права сверх read.
+#
+# ⚠ hub_read_token (PR #336 в techcon_hub, живая находка 25.08.2026): чекаут
+# techcon_hub внутри reusable workflow не может читать ДРУГОЙ приватный
+# репозиторий на GITHUB_TOKEN реусабл-запуска. Фолбэк-цепочка ниже — тот же
+# паттерн, что sync-infra-manifest.yml и ci.yml (dispatch): PEER_READ_TOKEN
+# (репозиторный секрет чтения хаба) → GH_ORG_TOKEN → TECHCON_HUB_TOKEN
+# (орг-секрет private-only, уже используется этим репозиторием для dispatch
+# В techcon_hub — обратное направление тому же репозиторию, значит доступ
+# как минимум не уже read).
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  sentinel:
+    uses: TechCon-ML-Team/techcon_hub/.github/workflows/push-to-main-sentinel-callable.yml@1cd8234d497b5075b4ad9344bd7efc2ffeb30cc7
+    secrets:
+      hub_read_token: ${{ secrets.PEER_READ_TOKEN || secrets.GH_ORG_TOKEN || secrets.TECHCON_HUB_TOKEN }}

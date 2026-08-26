@@ -1,0 +1,30 @@
+name: Язык и поверхности — слои аудитории
+
+# Б14 пп.2-3 плана Д (26.08.2026). Стаб: вся логика — в techcon_hub
+# (`scripts/gates/audience_check.py` + `canon/audience-surfaces.yaml`),
+# здесь только вызов и права. Копии скрипта нет намеренно — иначе Б6
+# (дубликаты правил) законно поймал бы дубликат.
+#
+# ⚠ Явный блок `permissions:` ОБЯЗАТЕЛЕН (урок G61, 25.08.2026):
+# `default_workflow_permissions` организации — "read", и без явного блока
+# GitHub отказывает в scheduling job'а вызываемого workflow
+# (`startup_failure`, 0 jobs).
+#
+# ⚠ `hub_read_token` ОБЯЗАТЕЛЕН (живая находка 25.08.2026, techcon_hub#336):
+# GITHUB_TOKEN реусабл-запуска скоуплен только на ВЫЗЫВАЮЩИЙ репозиторий,
+# и `actions/checkout` хаба без явного токена падает `Not Found`.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audience:
+    uses: TechCon-ML-Team/techcon_hub/.github/workflows/audience-check-callable.yml@7eabfdeb1aad561f3222d47e7932ed01ca9617c9
+    with:
+      layers: "user integrator"
+    secrets:
+      hub_read_token: ${{ secrets.PEER_READ_TOKEN || secrets.GH_ORG_TOKEN || secrets.TECHCON_HUB_TOKEN }}

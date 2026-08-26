@@ -11,6 +11,17 @@ on:
     workflow_dispatch:
 
 jobs:
+    # Б13-повтор (26.08.2026): гейт Dependabot больше не заводит СВОЙ прогон на
+    # каждый коммит PR (8 прогонов за 7 суток, 8 из них `skipped`,
+    # веток dependabot/* — 0). Он стал работой внутри этого прогона. Шаги,
+    # раннер и условие не изменились — сменилась единица учёта.
+    dependency-review:
+        name: Dependency Review Gate
+        if: github.event_name == 'pull_request'
+        uses: ./.github/workflows/dependency-review-gate.yml
+        permissions:
+            contents: read
+            pull-requests: read
     build:
         runs-on: ubuntu-latest
         strategy:

@@ -12,12 +12,13 @@
 
 | Среда | URL | Примечание |
 |---|---|---|
-| Продакшн | `https://techcon-activity-graph.vercel.app` | автоматически из `main`; стабильный алиас, проверено живьём 2026-08-07 |
+| Продакшн | `https://techcon-activity-graph.vercel.app` | автоматически из `main`; стабильный алиас, проверено живьём 2026-08-26 (`200`) |
 | Preview | адрес развёртывания вида `…-<hash>-<owner>.vercel.app` | генерируется при PR/push, меняется каждый раз; закреплять в документации нельзя |
-| API `/graph` | `<vercel-url>/graph` | основной endpoint |
+| API `/graph` | `<vercel-url>/graph` | основной endpoint; ветка `?username=…` деградирована с 2026-08-26 — см. `infra-topology.md` |
 | API `/data` | `<vercel-url>/data` | data endpoint |
 
-> Canonical URL уточняется в Vercel dashboard проекта `techcon_activity_graph`.
+> Canonical URL — стабильный алиас выше; он и есть точка входа продакшна.
+> В Vercel dashboard уточнять больше нечего.
 
 ## Локальный запуск
 

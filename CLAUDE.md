@@ -1,1 +1,1 @@
-@.scaffold/CLAUDE.md
+@AGENTS.md

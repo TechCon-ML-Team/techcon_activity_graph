@@ -1,21 +1,42 @@
 name: Страж прямого push в main
 
-# Б4 плана Д (25.08.2026) — раскатка на управляемые репозитории. Стаб вызывает
-# reusable workflow из techcon_hub; вся логика там, здесь только вызов + права.
+# Б4 плана Д (25.08.2026) — изначально раскатывался как стаб, вызывающий
+# reusable workflow из techcon_hub через `uses:`. Вся логика жила там одна,
+# здесь был только вызов + права.
+#
+# ⚠ G130 (31.08.2026) — ТРЕТИЙ, СТРУКТУРНЫЙ диагноз, почему этот подход не
+# работал именно для этого репозитория: GitHub не позволяет ПУБЛИЧНОМУ
+# репозиторию вызывать (`uses:`) reusable workflow, объявленный в ПРИВАТНОМ
+# репозитории той же организации — это платформенное ограничение, не
+# настройка. Подтверждено живьём: `gh api .../actions/runs/{id}` давал
+# `jobs: []`, `referenced_workflows: []` на КАЖДОМ прогоне, даже после двух
+# валидных промежуточных фиксов (перевод раннера на `ubuntu-latest`,
+# обновление SHA-пина, см. историю коммитов #24/#25/#26). У рабочих
+# ПРИВАТНЫХ вызывателей (например, techcon_defectoscopy) тот же паттерн
+# работает без единого сбоя.
+#
+# РЕШЕНИЕ ВЛАДЕЛЬЦА (31.08.2026, план Ж): не выносить сторожа в отдельный
+# публичный репозиторий-инструмент и не оставлять как принятый риск, а
+# продублировать логику НАПРЯМУЮ здесь, не через `workflow_call`. Карточка
+# `techcon_hub/canon/problems/G130-...yaml` сама называет это оправданным
+# исключением из принципа «один источник в hub» (Б6 плана Д) — для
+# ЕДИНСТВЕННОГО публичного репозитория организации. Источник правды (сам
+# скрипт `scripts/gates/push_to_main_sentinel.py` и реестр
+# `canon/rules/push-to-main-sentinel.yaml`) по-прежнему живёт в techcon_hub
+# и читается отсюда чекаутом — дублируется только обвязка workflow, не
+# бизнес-логика проверки.
 #
 # ⚠ КРИТИЧНО: явный блок permissions ниже ОБЯЗАТЕЛЕН (G61, план Д, 25.08.2026).
-# default_workflow_permissions этой организации — "read"; без явного блока
-# GitHub отказывает в scheduling самого job вызываемого workflow
-# (startup_failure), если вызываемый workflow запрашивает права сверх read.
 #
 # ⚠ hub_read_token (PR #336 в techcon_hub, живая находка 25.08.2026): чекаут
-# techcon_hub внутри reusable workflow не может читать ДРУГОЙ приватный
-# репозиторий на GITHUB_TOKEN реусабл-запуска. Фолбэк-цепочка ниже — тот же
-# паттерн, что sync-infra-manifest.yml и ci.yml (dispatch): PEER_READ_TOKEN
-# (репозиторный секрет чтения хаба) → GH_ORG_TOKEN → TECHCON_HUB_TOKEN
-# (орг-секрет private-only, уже используется этим репозиторием для dispatch
-# В techcon_hub — обратное направление тому же репозиторию, значит доступ
-# как минимум не уже read).
+# techcon_hub на GITHUB_TOKEN этого прогона не может читать ДРУГОЙ приватный
+# репозиторий. Фолбэк-цепочка ниже — тот же паттерн, что sync-infra-manifest.yml
+# и ci.yml (dispatch): PEER_READ_TOKEN (репозиторный секрет чтения хаба,
+# уже заведён и подтверждён живым владельцем 26.08.2026) → GH_ORG_TOKEN
+# (не существует нигде в организации, молчаливо резолвится в пустую строку)
+# → TECHCON_HUB_TOKEN (орг-секрет, но `visibility: private` — публичному
+# репозиторию НЕ виден; оставлен в цепочке только как задокументированный
+# исторический фолбэк, реально работает только первое звено).
 
 on:
   push:
@@ -24,14 +45,133 @@ on:
 permissions:
   contents: read
   issues: write
-  pull-requests: read
+  pull-requests: read  # GET .../commits/{sha}/pulls — распознавание rebase-merge
+
+concurrency:
+  group: push-to-main-sentinel-${{ github.repository }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   sentinel:
-    # G130 (31.08.2026): пин обновлён на коммит, переводящий job на
-    # github-hosted — прежний (@1cd8234) держал runs-on: vpc-runners,
-    # раннер-группа которого не пускает публичные репозитории вовсе
-    # (allows_public_repositories: false), job не планировался.
-    uses: TechCon-ML-Team/techcon_hub/.github/workflows/push-to-main-sentinel-callable.yml@a93b4e7a0f432493c83555cbc6ea1449cfa0c2c5
-    secrets:
-      hub_read_token: ${{ secrets.PEER_READ_TOKEN || secrets.GH_ORG_TOKEN || secrets.TECHCON_HUB_TOKEN }}
+    name: проверить, что push пришёл через PR
+    # G130: github-hosted, не self-hosted — self-hosted раннер-группа `vpc`
+    # несёт `allows_public_repositories: false` на уровне организации и
+    # никогда не выдаст раннер этому (публичному) репозиторию. Задача не
+    # обращается к внутренней сети — самостоятельного основания сидеть на
+    # self-hosted нет.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Чекаут этого репозитория
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0
+          path: caller
+
+      - name: Чекаут techcon_hub — источник скрипта и known_automation
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: TechCon-ML-Team/techcon_hub
+          path: hub
+          token: ${{ secrets.PEER_READ_TOKEN || secrets.GH_ORG_TOKEN || secrets.TECHCON_HUB_TOKEN }}
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86  # v5
+        with:
+          python-version: "3.11"
+          enable-cache: "true"
+
+      - name: Install dependencies
+        working-directory: hub
+        run: uv sync --frozen
+
+      - name: Проверить диапазон коммитов
+        id: sentinel
+        working-directory: hub
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          uv run python scripts/gates/push_to_main_sentinel.py \
+            --before "$BEFORE" --after "$AFTER" \
+            --repo-root "${{ github.workspace }}/caller" \
+            --repo "${{ github.repository }}" \
+            > /tmp/sentinel-output.txt 2>&1
+          rc=$?
+          set -e
+          cat /tmp/sentinel-output.txt
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0  # код смотрим на следующем шаге — тут не проваливаем job, чтобы issue успел создаться
+
+      - name: Сторож не измерил ни одного коммита — не «чисто», а «не измерено»
+        if: steps.sentinel.outputs.rc == '3'
+        run: |
+          echo "::error::диапазон before..after пуст (rc=3) — сторож ничего не проверил. Это не то же самое, что «нарушений не найдено»: разобраться, почему push дал пустой диапазон."
+          exit 1
+
+      - name: Сторож не отработал — авария скрипта, не суждение о push
+        if: steps.sentinel.outputs.rc != '0' && steps.sentinel.outputs.rc != '2' && steps.sentinel.outputs.rc != '3'
+        run: |
+          echo "::error::сторож push-to-main-sentinel завершился неожиданным кодом rc=${{ steps.sentinel.outputs.rc }} — это авария скрипта, а не проверка push. Зелёный прогон здесь означал бы «не падает», а не «судит» (К1 плана Е)."
+          exit 1
+
+      - name: Завести задачу и тревогу
+        if: steps.sentinel.outputs.rc == '2'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+        run: |
+          set -euo pipefail
+          BODY=$(cat <<EOF
+          Сторож \`push-to-main-sentinel\` (дублированная копия, G130 — reusable
+          недостижим для публичного репозитория) нашёл прямой push в \`main\` в обход PR.
+
+          Диапазон: \`$BEFORE..$AFTER\`
+          Автор события: @${{ github.actor }}
+          Прогон: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          \`\`\`
+          $(cat /tmp/sentinel-output.txt)
+          \`\`\`
+
+          Решение владельца №17 (план С): без автоотката — задача на разбор
+          и подтверждение, что это либо легитимный случай (добавить автора в
+          \`known_automation\` реестра \`canon/rules/push-to-main-sentinel.yaml\`
+          в techcon_hub), либо инцидент git-гигиены.
+          EOF
+          )
+          export ISSUE_TITLE="Прямой push в main в обход PR: ${AFTER:0:12}"
+          export ISSUE_BODY="$BODY"
+          PAYLOAD=$(python3 -c 'import json,os; print(json.dumps({"title": os.environ["ISSUE_TITLE"], "body": os.environ["ISSUE_BODY"], "labels": ["прямой-push"]}))')
+          resp=$(curl -sS -w '\n%{http_code}' -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/issues" \
+            -d "$PAYLOAD")
+          code=$(echo "$resp" | tail -1)
+          if [ "$code" -ge 300 ]; then
+            PAYLOAD=$(python3 -c 'import json,os; print(json.dumps({"title": os.environ["ISSUE_TITLE"], "body": os.environ["ISSUE_BODY"]}))')
+            resp=$(curl -sS -w '\n%{http_code}' -X POST \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${{ github.repository }}/issues" \
+              -d "$PAYLOAD")
+            code=$(echo "$resp" | tail -1)
+          fi
+          if [ "$code" -ge 300 ]; then
+            echo "::error::не удалось завести issue через REST API, код $code"
+            echo "$resp"
+            exit 1
+          fi
+          echo "issue заведён (код $code)"
+
+      - name: Красим прогон, если нарушение найдено
+        if: steps.sentinel.outputs.rc == '2'
+        run: |
+          echo "::error::прямой push в main в обход PR — задача создана"
+          exit 1

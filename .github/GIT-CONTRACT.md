@@ -230,7 +230,8 @@ Discovery: это единственный репо, где push в `main` **с�
 Раздел перенесён сюда дословно по смыслу из `docs/COMMIT_CONTRACT.md` —
 нераспределяемого дубликата, который жил копиями в 14 репозиториях вне
 распределительной трубы и разошёлся на **6** разных редакций (см.
-`canon/problems/G62-commit-contract-unsourced-duplicate-diverged.yaml`).
+`canon/exec/closed-cards/G62-commit-contract-unsourced-duplicate-diverged.yaml`,
+закрыта 2026-08-31).
 Решение владельца от 26.08.2026, вариант «а»: merge-authority — актуальная
 политика, её место здесь, в файле, который раздаётся с маркером источника.
 

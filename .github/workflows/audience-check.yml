@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   audience:
-    uses: TechCon-ML-Team/techcon_hub/.github/workflows/audience-check-callable.yml@38341b0c890ca3a39925504667bb26b60ef38561
+    uses: TechCon-ML-Team/techcon_hub/.github/workflows/audience-check-callable.yml@7c05606050124ce4206e23f20c423ca7ea92cc68
     with:
       layers: "user integrator"
     secrets:

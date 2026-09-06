@@ -1,18 +1,63 @@
 name: Язык и поверхности — слои аудитории
 
-# Б14 пп.2-3 плана Д (26.08.2026). Стаб: вся логика — в techcon_hub
-# (`scripts/gates/audience_check.py` + `canon/audience-surfaces.yaml`),
-# здесь только вызов и права. Копии скрипта нет намеренно — иначе Б6
-# (дубликаты правил) законно поймал бы дубликат.
+# Б14 пп.2-3 плана Д (26.08.2026). Логика гейта — в techcon_hub
+# (`scripts/gates/audience_check.py` + `canon/audience-surfaces.yaml`).
+# Копии СКРИПТА здесь нет намеренно — иначе Б6 (дубликаты правил) законно
+# поймал бы дубликат; хаб вычитывается чекаутом. Дублируется только обвязка.
 #
-# ⚠ Явный блок `permissions:` ОБЯЗАТЕЛЕН (урок G61, 25.08.2026):
-# `default_workflow_permissions` организации — "read", и без явного блока
-# GitHub отказывает в scheduling job'а вызываемого workflow
-# (`startup_failure`, 0 jobs).
+# ⚠ БЫЛО СТАБОМ `uses:` И ПАДАЛО ШЕСТЬ ПРОГОНОВ ИЗ ШЕСТИ (правка 06.09.2026).
 #
-# ⚠ `hub_read_token` ОБЯЗАТЕЛЕН (живая находка 25.08.2026, techcon_hub#336):
-# GITHUB_TOKEN реусабл-запуска скоуплен только на ВЫЗЫВАЮЩИЙ репозиторий,
-# и `actions/checkout` хаба без явного токена падает `Not Found`.
+# До этой правки файл вызывал
+# `techcon_hub/.github/workflows/audience-check-callable.yml@7c05606` и давал
+# `conclusion: failure` при `jobs.total_count` = 0 и `referenced_workflows` = []
+# на КАЖДОМ PR с 26.08.2026 — то есть краснел, ничего не проверив. Красный,
+# который ничего не судит, хуже отсутствующего: его перестают читать, а
+# охват при этом выглядит закрытым. Мержу он не мешал (в ruleset
+# `main-protection` required_status_checks нет вовсе), поэтому PR #31-#35
+# уезжали в main поверх красного гейта.
+#
+# ⚠ ПРИЧИНА — ПЛАТФОРМЕННАЯ, И В ЭТОТ РАЗ ОНА РАЗДЕЛЕНА С КОНФАУНДЕРОМ.
+# Этот репозиторий ПУБЛИЧНЫЙ, `techcon_hub` приватный, и GitHub не даёт
+# публичному репозиторию резолвить reusable workflow приватного. Настройкой
+# не лечится: у хаба `actions/permissions/access` = `organization` (доступ уже
+# открыт всей организации), а у публичной цели этот эндпоинт отвечает
+# `422 Access policy only applies to internal and private repositories`.
+#
+# Прежний диагноз G130 опирался на прогоны, где смешаны ДВЕ причины: запрет
+# «публичный → приватный» и `runs-on: vpc-runners` с орг-настройкой
+# `allows_public_repositories: false`. Для ЭТОГО гейта конфаундер был реален:
+# `audience-check-callable.yml` держит `runs-on: vpc-runners` на обоих пинах —
+# и 7c05606, и сегодняшнем 84be1896. Разделено канарейкой PR #36 (прогон
+# 34047507220): вызван `push-to-main-sentinel-callable.yml@84be1896` с
+# `runs-on: ubuntu-latest` — итог тот же (0 джоб, refs=[]), при том что
+# контроль в том же прогоне (`Node.js CI` → локальный реусабл) дал refs=1.
+# Значит дело в видимости вызывателя, а не в раннере и не в пине.
+#
+# ⚠ ЯВНЫЙ БЛОК `permissions:` ОБЯЗАТЕЛЕН (урок G61, 25.08.2026):
+# `default_workflow_permissions` организации — "read" (замер:
+# `gh api orgs/TechCon-ML-Team/actions/permissions/workflow`), и без явного
+# блока GitHub отказывает в scheduling job'а (`startup_failure`, 0 jobs).
+# Это ОТДЕЛЬНАЯ причина нуля джоб, и снос этого блока вернул бы тот же
+# симптом уже по своей вине — не спутать с запретом выше.
+#
+# ⚠ ТОКЕН ЧТЕНИЯ ХАБА ОБЯЗАТЕЛЕН (живая находка 25.08.2026, techcon_hub#336):
+# `GITHUB_TOKEN` прогона скоуплен только на ЭТОТ репозиторий, и
+# `actions/checkout` чужого приватного репозитория без явного токена падает
+# `Not Found`. Цепочка ниже — та же, что в `push-to-main-sentinel.yml`:
+#   PEER_READ_TOKEN    — репо-секрет, ЗАВЕДЁН здесь (замер
+#                        `gh api .../actions/secrets`: создан 26.08.2026) и
+#                        рабочий: на нём зелен инлайн-сторож push;
+#   GH_ORG_TOKEN       — не существует нигде в организации (404), молчаливо
+#                        резолвится в пустую строку;
+#   TECHCON_HUB_TOKEN  — орг-секрет с `visibility: private`, публичному
+#                        репозиторию НЕ виден.
+# Реально работает ТОЛЬКО первое звено. Остальные оставлены как
+# задокументированный исторический фолбэк, чтобы следующая правка не решила,
+# что цепочку можно «упростить» до неработающего звена.
+#
+# ⚠ `runs-on: ubuntu-latest`, А НЕ `vpc-runners`: группа `vpc` не выдаёт
+# раннер публичному репозиторию, а PR из форков публичного репозитория на
+# self-hosted исполнялись бы внутри нашего VPC.
 
 on:
   pull_request:
@@ -21,10 +66,94 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: audience-check-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   audience:
-    uses: TechCon-ML-Team/techcon_hub/.github/workflows/audience-check-callable.yml@7c05606050124ce4206e23f20c423ca7ea92cc68
-    with:
-      layers: "user integrator"
-    secrets:
-      hub_read_token: ${{ secrets.PEER_READ_TOKEN || secrets.GH_ORG_TOKEN || secrets.TECHCON_HUB_TOKEN }}
+    name: язык и поверхности — слои аудитории
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Чекаут этого репозитория
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          path: caller
+
+      # ⚠ ХАБ БЕРЁТСЯ ПО ВЕТКЕ ПО УМОЛЧАНИЮ, БЕЗ `ref:` — ЭТО ЗАПИСАННОЕ
+      # СВОЙСТВО КОНТРАКТА, А НЕ НЕДОСМОТР. Тот же контракт у обоих хабовых
+      # callable ('Чекаут techcon_hub' там тоже без `ref:`): гейт всегда
+      # исполняет СЕГОДНЯШНИЙ скрипт и сегодняшний храповик. Следствие —
+      # определение проверки и её код могут разъехаться, и это принято
+      # осознанно; менять в одну сторону нельзя, иначе два стража хаба ведут
+      # себя по-разному на одинаково выглядящей обвязке.
+      #
+      # ⚠ ЧАСТИЧНЫЙ ЧЕКАУТ, А НЕ ПОЛНЫЙ (хабовая правка 05.09.2026, CI как
+      # блокер): полный клон хаба — 49 МБ, из них `canon/_archive` 17 МБ и
+      # `canon/_research` 8 МБ, гейту не нужные вовсе; нужные пути — 3.4 МБ.
+      #
+      # ⚠ СПИСОК ПУТЕЙ — НЕ ДОГАДКА, А ЧТЕНИЕ ГЕЙТА, и он скопирован из
+      # `audience-check-callable.yml` дословно. `audience_check.py` читает
+      # `canon/audience-surfaces.yaml`, `canon/ecosystem/linear-snapshot.json`,
+      # `canon/_language-audience-baseline.json`,
+      # `canon/standards/language-dictionary.md`, а через `language_check.py` —
+      # `canon/language-dictionary.yaml`, `canon/standards/` и корневые
+      # документы канона. Плюс `pyproject.toml`/`uv.lock` для `uv sync --frozen`.
+      # Если гейт начнёт читать путь вне списка, он получит «файл не найден»,
+      # то есть откажет ГРОМКО, а не тихо позеленеет на пустом множестве.
+      - name: Чекаут techcon_hub — источник словаря, матрицы и храповика
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: TechCon-ML-Team/techcon_hub
+          path: hub
+          token: ${{ secrets.PEER_READ_TOKEN || secrets.GH_ORG_TOKEN || secrets.TECHCON_HUB_TOKEN }}
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /pyproject.toml
+            /uv.lock
+            /INFRA.yaml
+            scripts
+            canon/standards
+            canon/ecosystem
+            canon/rules
+            canon/audience-surfaces.yaml
+            canon/language-dictionary.yaml
+            canon/_language-audience-baseline.json
+            canon/GUIDE.md
+            canon/MAP.md
+            canon/DECISIONS.md
+            canon/PRECEDENCE.md
+            canon/WORKFLOW.md
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86  # v5
+        with:
+          python-version: "3.11"
+          enable-cache: "true"
+
+      - name: Install dependencies
+        working-directory: hub
+        run: uv sync --frozen
+
+      # Слои — те же, что стоял стаб: `user integrator`. Слой «разработчик»
+      # здесь не берётся (его знаменатель — корпус самого хаба), «менеджмент»
+      # судит Linear-снимок, а не дерево репозитория.
+      #
+      # Замер до раскатки (локальный прогон гейта против дерева этого
+      # репозитория, 06.09.2026): слой «user» — 1 поверхность, находок 0;
+      # слой «integrator» — 0 поверхностей, и гейт САМ печатает
+      # «ЗНАМЕНАТЕЛЬ ПУСТ: слой не покрыт здесь ничем — это НЕ „чисто“».
+      # rc=0. То есть гейт судит, а не краснеет и не зеленеет на пустом.
+      - name: Проверить поверхности слоёв
+        working-directory: hub
+        run: |
+          set -euo pipefail
+          uv run python scripts/gates/audience_check.py \
+            --layer user \
+            --layer integrator \
+            --repo-root "${{ github.workspace }}/caller" \
+            --hub-root . \
+            --repo-name "${{ github.event.repository.name }}" \
+            --enforce

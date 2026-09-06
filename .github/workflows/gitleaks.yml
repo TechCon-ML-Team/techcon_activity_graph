@@ -1,0 +1,119 @@
+name: Secret Scanning (gitleaks)
+
+# ⚠ ЗАЧЕМ КОПИЯ, А НЕ ВЫЗОВ РЕУСАБЛА ХАБА (06.09.2026).
+#
+# Флотовый гейт покрытия `techcon_hub/scripts/gates/gitleaks_coverage_fleet.py`
+# перечисляет живые управляемые репозитории и требует, чтобы каждый нёс
+# gitleaks-покрытие — прямой копией либо вложенным вызовом. На 06.09.2026 из
+# восемнадцати целей не покрыта была РОВНО ОДНА: этот репозиторий. Гейт из-за
+# этого краснел, то есть покрытие всего флота держалось на одном пробеле.
+#
+# Вложенный вызов здесь НЕ РАБОТАЕТ, и это измерено, а не предположено: этот
+# репозиторий ПУБЛИЧНЫЙ, а `techcon_hub` приватный, и GitHub не даёт публичному
+# репозиторию вызывать reusable workflow приватного. Живое подтверждение —
+# `audience-check.yml` здесь падает четыре прогона из четырёх, и падает без
+# единой job'ы (ноль джоб в прогоне), то есть воркфлоу не планируется вовсе.
+# Тот же вывод уже был сделан в этом репозитории раньше: последний коммит
+# `fix(G130): продублировать сторожа напрямую вместо reusable workflow_call`.
+#
+# ⚠ И ПОЧЕМУ `ubuntu-latest`, А НЕ `vpc-runners`. Для публичных репозиториев
+# раннеры GitHub бесплатны — этому репозиторию self-hosted пул не нужен вовсе.
+# Обратное решение было бы хуже вдвойне: PR из форков публичного репозитория
+# исполнялись бы на наших раннерах внутри VPC. В реестре тиров
+# (`canon/ecosystem/repo-tiers.yaml`) для этого репозитория так и записано:
+# «публичный репозиторий — ubuntu-latest и почерк open-source легитимны».
+#
+# Шаги ниже повторяют хабовый `gitleaks.yml` по существу: тот же образ, тот же
+# диапазон коммитов, та же авто-провизия базового конфига. Расхождение в
+# раннере — намеренное и объяснено выше.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitleaks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: Scan for secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      # Гейт проверяет только НОВЫЕ коммиты (диапазон base..head для PR,
+      # before..after для push), а не всю историю целиком: полная историческая
+      # инвентаризация секретов — отдельная и более чувствительная задача.
+      - name: Resolve commit range
+        id: range
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "range=${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "push" ] && [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            echo "range=${{ github.event.before }}..${{ github.event.after }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "range=" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Если репозиторий несёт свой `.gitleaks.toml` — используется он. Если нет,
+      # провизится org-базовый набор: `useDefault` (вендорские паттерны) плюс три
+      # org-специфичных правила. БЕЗ allowlist хаба: тот завязан на тестовые
+      # фикстуры конкретных репозиториев и был бы неверным дефолтом здесь.
+      - name: Провизить базовый .gitleaks.toml, если своего нет
+        run: |
+          if [ -f "$GITHUB_WORKSPACE/.gitleaks.toml" ]; then
+            echo "::notice::используется .gitleaks.toml репозитория"
+          else
+            echo "::notice::.gitleaks.toml не найден — провизится org-базовый набор правил"
+            cat > "$GITHUB_WORKSPACE/.gitleaks.toml" <<'GITLEAKS_ORG_BASELINE_EOF'
+          title = "TechCon gitleaks config (org baseline, авто-провизия gitleaks.yml)"
+
+          [extend]
+          useDefault = true
+
+          [[rules]]
+          id = "techcon-service-token"
+          description = "TechCon service token: tc-<service>-<env>-<random>"
+          regex = '''tc-[a-z0-9]{2,12}-(dev|stage|staging|prod|test)-[A-Za-z0-9_\-]{12,}'''
+          tags = ["techcon", "custom", "service-token"]
+
+          [[rules]]
+          id = "techcon-generic-bearer-token"
+          description = "Generic Bearer/Authorization токен высокой энтропии вне тестовых путей"
+          regex = '''(?i)(bearer|authorization)[\s"':=]{1,6}[A-Za-z0-9\-_\.]{24,}'''
+          tags = ["techcon", "custom", "bearer"]
+
+          [[rules]]
+          id = "techcon-jwt"
+          description = "JWT-подобная строка (три base64url части, разделённые точкой)"
+          regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
+          tags = ["techcon", "custom", "jwt"]
+          GITLEAKS_ORG_BASELINE_EOF
+          fi
+
+      - name: Run gitleaks (new commits only)
+        run: |
+          LOG_OPTS=""
+          if [ -n "${{ steps.range.outputs.range }}" ]; then
+            LOG_OPTS="--log-opts=${{ steps.range.outputs.range }}"
+          fi
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/repo" \
+            zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            detect \
+            --source=/repo \
+            --config=/repo/.gitleaks.toml \
+            $LOG_OPTS \
+            --redact \
+            --no-banner \
+            --verbose

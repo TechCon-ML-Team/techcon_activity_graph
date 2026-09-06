@@ -1,0 +1,180 @@
+name: Стандарты тира b
+
+# Р1 из Плана Е (Волна 4, Э4) — пол стандартов тира. У остальных репозиториев
+# флота это СТАБ в три строки, вызывающий
+# `techcon_hub/.github/workflows/techcon-standards-callable.yml@<SHA>`.
+# ЗДЕСЬ ТАК НЕЛЬЗЯ, и это замерено, а не предположено.
+#
+# ⚠ ПОЧЕМУ КОПИЯ, А НЕ ВЫЗОВ РЕУСАБЛА (замер 06.09.2026).
+#
+# Этот репозиторий ПУБЛИЧНЫЙ, `techcon_hub` — приватный, и GitHub не даёт
+# публичному репозиторию резолвить reusable workflow приватного репозитория
+# той же организации. Настройкой это не лечится: у хаба
+# `actions/permissions/access` = `organization`, то есть доступ уже открыт
+# всей организации, а у публичной цели этот эндпоинт вообще отвечает
+# `422 Access policy only applies to internal and private repositories`.
+#
+# ЖИВОЕ ДОКАЗАТЕЛЬСТВО, В КОТОРОМ ПРИЧИНЫ РАЗДЕЛЕНЫ. Прежний диагноз (G130,
+# PR #26/#27) опирался на прогоны, где СМЕШАНЫ две причины: запрет
+# «публичный → приватный» и `runs-on: vpc-runners` с орг-настройкой
+# `allows_public_repositories: false`. Разделено канарейкой PR #36
+# (прогон 34047507220): вызван `push-to-main-sentinel-callable.yml@84be1896`,
+# у которого `runs-on: ubuntu-latest` — конфаундер раннера снят. Итог:
+# `jobs.total_count` = 0, `referenced_workflows` = [], startup_failure.
+# Контроль в ТОМ ЖЕ прогоне того же PR: `Node.js CI` дал
+# `referenced_workflows` = 1 (локальный `dependency-review-gate.yml`), то есть
+# поле заполняется исправно — ноль означает «резолв не состоялся».
+# Контроль по флоту: приватные вызыватели резолвят тот же callable при той же
+# орг-политике `allowed_actions: selected`; единственная различающаяся
+# переменная — видимость вызывателя.
+#
+# Дублирование обвязки здесь — уже принятое РЕШЕНИЕ ВЛАДЕЛЬЦА (31.08.2026,
+# план Ж) для ЕДИНСТВЕННОГО публичного репозитория организации: см. тот же
+# паттерн в `push-to-main-sentinel.yml` (G130) и `gitleaks.yml` (G175).
+#
+# ⚠ ЧЕГО ЗДЕСЬ НЕТ ПО СРАВНЕНИЮ С CALLABLE, И ПОЧЕМУ ЭТО НЕ СУЖЕНИЕ ОХВАТА.
+# В callable два job'а: `standards` (три проверки ниже) и `secret-scan` —
+# вложенный `uses:` хабового `gitleaks.yml`. Второй здесь НЕ ВОСПРОИЗВОДИТСЯ
+# намеренно: покрытие gitleaks у этого репозитория уже есть СВОЕЙ прямой
+# копией `.github/workflows/gitleaks.yml` (заведена G175, PR #35), а флотовый
+# гейт `scripts/gates/gitleaks_coverage_fleet.py` считает такую копию
+# покрытием по первому же признаку (ветка `if "gitleaks.yml" in files` →
+# `covered`, «прямая копия»). Инлайнить или дублировать его тут значило бы
+# два прогона gitleaks на каждый PR при одном и том же охвате.
+#
+# ⚠ ЧЕТЫРЕ СУБ-ПРОВЕРКИ R1 ОТСУТСТВУЮТ И В CALLABLE (allowlist экшенов,
+# доставка секретов, dependency-review, тренд спроса CI) — они сознательно
+# отложены в самом хабе, потому что требуют токена выше GITHUB_TOKEN. Здесь
+# они тоже отсутствуют, ровно по той же причине и не шире.
+#
+# ⚠ `runs-on: ubuntu-latest`, А НЕ `vpc-runners`. Орг-группа `vpc` несёт
+# `allows_public_repositories: false` и никогда не выдаст раннер публичному
+# репозиторию — на self-hosted этот воркфлоу просто висел бы. Для публичных
+# репозиториев раннеры GitHub бесплатны, а обратное решение пустило бы PR из
+# форков публичного репозитория исполняться внутри нашего VPC.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: standards-${{ github.ref }}
+  # ⚠ ОТМЕНА ТОЛЬКО ДЛЯ PR, И ЭТО ПРАВКА 06.09.2026 ПО АДВЕРСАРНОЙ ПРОВЕРКЕ.
+  # Было `cancel-in-progress: true` безусловно. На `push` в ветку по умолчанию это
+  # означало бы, что вердикт по промежуточному коммиту теряется: отменённый прогон
+  # — не «зелёный» и не «красный», он вообще не вердикт, а в списке проверок
+  # выглядит так же безобидно, как пропущенный. Ровно тот класс «пропуск
+  # неотличим от успеха», против которого стоит сам гейт.
+  # Для PR отмена законна: важен вердикт по ГОЛОВЕ ветки, а не по каждому пушу.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  standards:
+    # Три проверки в ОДНОМ job'е — то же решение по стоимости, что принято в
+    # хабе 05.09.2026 (G168): полезной работы здесь секунды, а каждый job — под.
+    name: пол стандартов тира (tier + формат коммитов + раздача Э1)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Тир из `canon/ecosystem/repo-tiers.yaml`. Проверка ниже не «на глаз»:
+      # кириллическая «а» неотличима от латинской «a» глазом, а сравнение в
+      # других гейтах побайтовое.
+      TIER: b
+    steps:
+      - name: Значение tier обязано быть ровно a, b или v
+        run: |
+          case "$TIER" in
+            a|b|v)
+              echo "tier='$TIER' — OK"
+              ;;
+            *)
+              echo "::error::недопустимое значение tier='$TIER'. Допустимы ТОЛЬКО 'a', 'b', 'v' (латиница, строчные) — см. canon/ecosystem/repo-tiers.yaml в techcon_hub."
+              exit 1
+              ;;
+          esac
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0  # нужна полная история диапазона, не только HEAD
+
+      - name: Диапазон коммитов этого события обязан соответствовать формату
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BEFORE="$PR_BASE"
+            AFTER="$PR_HEAD"
+          else
+            BEFORE="$PUSH_BEFORE"
+            AFTER="$PUSH_AFTER"
+          fi
+
+          # Пустой диапазон — это НЕ «чисто», а «не измерено». Та же дисциплина,
+          # что в scripts/gates/push_to_main_sentinel.py (rc=3 отдельно от rc=0/2):
+          # знаменатель ноль не имеет права выглядеть как «всё прошло».
+          if [ -z "$BEFORE" ] || [ -z "$AFTER" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "::warning::диапазон коммитов не определён для события '$EVENT_NAME' (before='$BEFORE', after='$AFTER') — формат НЕ проверен, это не равнозначно 'чисто'"
+            exit 0
+          fi
+
+          RANGE="$BEFORE..$AFTER"
+          # G166: back-merge/sync PR тащит ВЕСЬ диапазон, а не только новые
+          # коммиты, и красит коммиты, написанные ДО формализации формата
+          # (canon/COMMIT-CONTRACT.md: первая формализация 26-27.08.2026).
+          # Обрезаем по дате коммита — самый узкий признак «что реально новое».
+          FORMAT_EFFECTIVE_SINCE="2026-08-26T00:00:00"
+          COMMITS="$(git log --no-merges --since="$FORMAT_EFFECTIVE_SINCE" --pretty='%H%x1f%s' "$RANGE" 2>/dev/null || true)"
+
+          if [ -z "$COMMITS" ]; then
+            echo "::notice::диапазон $RANGE не содержит коммитов новее $FORMAT_EFFECTIVE_SINCE (без учёта merge-родителей) — формат НЕ проверен на этом диапазоне, это ожидаемо для чистого back-merge, не 'чисто' по умолчанию"
+            exit 0
+          fi
+
+          PATTERN='^(feat|fix|docs|refactor|test|chore|perf|style|build|ci|wip|merge|gate)(\([^)]+\))?(!)?: .+'
+          MERGE_PATTERN='^Merge (pull request|branch|remote-tracking branch)'
+
+          FAIL=0
+          COUNT=0
+          while IFS=$'\x1f' read -r sha subject; do
+            [ -z "$sha" ] && continue
+            COUNT=$((COUNT + 1))
+            if printf '%s' "$subject" | grep -qE "$PATTERN"; then
+              continue
+            fi
+            if printf '%s' "$subject" | grep -qE "$MERGE_PATTERN"; then
+              continue
+            fi
+            echo "::error::коммит ${sha:0:12} не соответствует canon/COMMIT-CONTRACT.md: ${subject}"
+            FAIL=1
+          done <<< "$COMMITS"
+
+          echo "проверено коммитов: $COUNT"
+          if [ "$FAIL" -eq 1 ]; then
+            echo "::error::формат коммит-сообщений нарушен — см. canon/COMMIT-CONTRACT.md в techcon_hub"
+            exit 1
+          fi
+          echo "все $COUNT коммит(ов) соответствуют canon/COMMIT-CONTRACT.md"
+
+      - name: AGENTS.md обязан существовать и нести маркер раздачи
+        run: |
+          set -euo pipefail
+          if [ ! -f AGENTS.md ]; then
+            echo "::error::AGENTS.md не найден — репозиторий не получил раздачу Э1 (см. distribute-agent-infra-source.yml в techcon_hub)"
+            exit 1
+          fi
+          if ! grep -q '<!-- techcon-hub:agent-rules:begin' AGENTS.md; then
+            echo "::error::AGENTS.md существует, но не несёт маркер '<!-- techcon-hub:agent-rules:begin' — раздача Э1 либо не проходила, либо файл правили руками поверх раздачи"
+            exit 1
+          fi
+          echo "AGENTS.md несёт раздачу Э1 — OK"

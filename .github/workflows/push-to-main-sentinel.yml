@@ -74,6 +74,7 @@ jobs:
           repository: TechCon-ML-Team/techcon_hub
           path: hub
           token: ${{ secrets.PEER_READ_TOKEN || secrets.GH_ORG_TOKEN || secrets.TECHCON_HUB_TOKEN }}
+          fetch-depth: 1
 
       - name: Setup uv
         uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86  # v5

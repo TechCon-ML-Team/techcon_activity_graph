@@ -8,3 +8,13 @@
 /coverage
 /.idea
 .package-lock.json
+
+# techcon-hub:agent-harness:begin
+!.claude/
+.claude/*
+!.claude/agents/
+!.claude/skills/
+!.claude/settings.json
+.claude/worktrees/
+.claude/settings.local.json
+# techcon-hub:agent-harness:end

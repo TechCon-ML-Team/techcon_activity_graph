@@ -98,6 +98,16 @@ jobs:
           description = "JWT-подобная строка (три base64url части, разделённые точкой)"
           regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
           tags = ["techcon", "custom", "jwt"]
+
+          # Единый харнесс агентов (не репо-специфичная фикстура — универсально
+          # для любого репозитория, получающего раздачу): generic-api-key
+          # принимает sha256-хеш скилла с "-access" в имени за ключ (найдено
+          # 22.09.2026 на живой раздаче партии 2, techcon_activity_graph).
+          [allowlist]
+          description = "Генерируемый lock единого харнесса — только sha256-хеши скиллов"
+          paths = [
+            '''\.agents/harness\.lock\.json$''',
+          ]
           GITLEAKS_ORG_BASELINE_EOF
           fi
 

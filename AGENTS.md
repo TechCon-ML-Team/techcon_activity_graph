@@ -4,11 +4,12 @@
 - This repo is part of the TechCon working set.
 - Use repo-local docs/status for task-specific truth, and use the hub-level access surface for no-secrets infra access guidance.
 
-<!-- techcon-hub:agent-rules:begin sha256:869ed2cfca36144370c28ea7cbbdce34e034dd37093e331eb35d9c3e6bb0eff2 -->
+<!-- techcon-hub:agent-rules:begin sha256:5925190641c3cdc5cf28e293a3e7a21297639964d76e8b65a0e3c9e91dd95b7e -->
 <!-- СГЕНЕРИРОВАНО compiler/render_agents_fragment.py — не редактировать руками. -->
 <!-- Источники: policy/prompt.yaml, models/registry.yaml, roles/*.yaml -->
 
 Закон первенства: решение владельца > живое состояние > планы. Проигравший документ исправляется, не аннотируется. Классы решений: A — владелец, B — агент+запись+ревью, C — агент сам. Полный текст и обоснование — docs/precedence.md в techcon_agent_harness.
+Проверка харнесса. В начале сессии выполни одну команду: `python3 /opt/techcon-harness/cli/doctor_machine.py --machine`. Если она сообщает «не развёрнуто» или файла нет, скажи пользователю, что защитные хуки не установлены, и покажи ему текст `.agents/HARNESS-INSTALL.md`. Установку сам не запускай: она требует sudo, а его выполняет только человек.
 
 | Тир | Назначение | Claude | Codex |
 |---|---|---|---|

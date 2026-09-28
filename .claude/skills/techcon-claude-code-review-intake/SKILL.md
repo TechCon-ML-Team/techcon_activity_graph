@@ -2,7 +2,7 @@
 name: techcon-claude-code-review-intake
 description: Читает файл-результат ревью (frontmatter c полем verdict) после того как ревью помечено готовым, и продолжает работу по типу verdict — approved/changes-requested/needs-discussion/critique.
 allowed-tools: Read, Edit, Grep, Glob
-harness: org@56a6fcf9f3cd846d7238a9233b40f00eed7f22b0
+harness: org@2645047b3c77da9c18ed8019ff02fa4acb7c2d6b
 ---
 # Intake результата ревью
 

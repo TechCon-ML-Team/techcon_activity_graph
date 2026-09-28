@@ -17,4 +17,5 @@
 !.claude/settings.json
 .claude/worktrees/
 .claude/settings.local.json
+.agents/*.local.*
 # techcon-hub:agent-harness:end

@@ -1,7 +1,7 @@
 ---
 name: techcon-claude-handoff-preparation
 description: Используй, когда задача лучше подходит для Claude: фронтенд, дизайн, HTML, презентации, дашборды, упаковка идей, бизнес- и продуктовое планирование.
-harness: org@56a6fcf9f3cd846d7238a9233b40f00eed7f22b0
+harness: org@2645047b3c77da9c18ed8019ff02fa4acb7c2d6b
 ---
 # Подготовка пакета передачи в Claude
 

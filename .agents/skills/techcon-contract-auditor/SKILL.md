@@ -1,7 +1,7 @@
 ---
 name: techcon-contract-auditor
 description: Найди рассинхроны контрактов между сервисами TechCon — polling-роуты, envelope ответа, коды ошибок, имена очередей/стримов, auth, /health. Применяй при аудите интеграции 2+ сервисов или подозрении на несовместимость. Выдаёт diff-таблицу с severity.
-harness: org@56a6fcf9f3cd846d7238a9233b40f00eed7f22b0
+harness: org@2645047b3c77da9c18ed8019ff02fa4acb7c2d6b
 ---
 # Аудитор межсервисных контрактов
 

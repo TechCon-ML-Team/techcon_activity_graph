@@ -1,7 +1,7 @@
 ---
 name: techcon-yc-cli
 description: Безопасные мутации ресурсов Yandex Cloud через yc CLI — allowlist cloud/folder-id ПЕРЕД create/update/delete/start/stop. Применяй при любой задаче, которая создаёт/меняет/удаляет/запускает ВМ, диск, DNS-запись, сеть или секрет Lockbox. Чтение (list/get) — без guard.
-harness: org@56a6fcf9f3cd846d7238a9233b40f00eed7f22b0
+harness: org@2645047b3c77da9c18ed8019ff02fa4acb7c2d6b
 ---
 # YC CLI — безопасные мутации
 

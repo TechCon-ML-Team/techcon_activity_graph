@@ -1,7 +1,7 @@
 ---
 name: techcon-architecture-boundaries-template
 description: Настрой arch-lint для репозитория со слоистой структурой (domain/infra, core/adapters): детект слоёв, запрет обратных зависимостей и циклов. Применяй при онбординге нового репозитория или по прямой просьбе проверить архитектурные границы.
-harness: org@56a6fcf9f3cd846d7238a9233b40f00eed7f22b0
+harness: org@2645047b3c77da9c18ed8019ff02fa4acb7c2d6b
 ---
 # Шаблон архитектурных границ
 

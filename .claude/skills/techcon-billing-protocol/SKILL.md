@@ -1,7 +1,7 @@
 ---
 name: techcon-billing-protocol
 description: Используй для воспроизводимого снятия затрат Yandex Cloud любого репозитория TechCon — baseline-расчёт, прогноз бюджета, сверка свежести или сводка расходов.
-harness: org@56a6fcf9f3cd846d7238a9233b40f00eed7f22b0
+harness: org@2645047b3c77da9c18ed8019ff02fa4acb7c2d6b
 ---
 # Протокол снятия затрат TechCon
 

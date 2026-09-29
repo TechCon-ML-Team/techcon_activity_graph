@@ -1,7 +1,7 @@
 ---
 name: techcon-linear-governance
 description: Используй при любой правке Linear (issue, статус, проект, комментарий) — сначала объясни что и зачем меняешь, дождись согласия и только после этого мутируй.
-harness: org@2645047b3c77da9c18ed8019ff02fa4acb7c2d6b
+harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
 ---
 # Linear governance — explain-then-mutate
 

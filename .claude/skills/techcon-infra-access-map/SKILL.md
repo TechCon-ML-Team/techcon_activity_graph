@@ -1,7 +1,7 @@
 ---
 name: techcon-infra-access-map
 description: Карта доступов к инфраструктуре TechCon — SSH/VM, GitHub, GitLab, YC CLI, Linear — и разделение read-only/operator-gated команд. Применяй в начале любой задачи, трогающей инфраструктуру, чтобы не гадать креды и адреса по памяти.
-harness: org@2645047b3c77da9c18ed8019ff02fa4acb7c2d6b
+harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
 ---
 # Инфраструктурный доступ TechCon
 

@@ -95,10 +95,19 @@ opt-in и выключено, и **ссылается** на плагин как
   },
   "commitMessage": {
     "requireType": true,
-    "allowedTypes": ["feat", "fix", "docs", "ci", "chore", "refactor", "test"]
+    "allowedTypes": ["build", "chore", "ci", "docs", "feat", "fix", "perf", "refactor", "revert", "style", "test"]
   }
 }
 ```
+
+⚠ Единственный источник правды по списку типов коммитов организации —
+`techcon_agent_harness/cli/techcon_harness/commit_lint.py::ALLOWED_TYPES` (полный
+closed list Conventional Commits 1.0.0, 11 типов). Код-блок выше — иллюстративная
+копия для читателя этого документа, не исполняемый артефакт: сам плагин
+`scaffold-git-policy.ts`, который реально энфорсит `commitMessage.allowedTypes`,
+живёт в `pi-scaffold` (см. §1.2 выше) — репозитории, который эта сессия не
+открывает. При расхождении между этим блоком и `commit_lint.py` — правда за
+`commit_lint.py`, эту копию нужно поправить вручную/раздачей вслед за ним.
 
 Ключевое изменение относительно дефолта плагина: **`develop` добавляется в `protectedBranches`**. Плагин
 по умолчанию защищает только `main`/`master` — `develop` открыт для прямого push. Без этого весь смысл

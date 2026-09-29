@@ -1,7 +1,7 @@
 ---
 name: techcon-production-safety
 description: Используй, когда задача касается прода, деплоя, БД, миграций, облака, Kubernetes, Terraform, Yandex Cloud, релизов или любых деструктивных операций.
-harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
+harness: org@0e0eca19135133b995f4a6e61b0d0f22d702baee
 ---
 # Production safety
 

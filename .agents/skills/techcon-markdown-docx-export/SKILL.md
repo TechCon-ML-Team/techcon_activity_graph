@@ -1,7 +1,7 @@
 ---
 name: techcon-markdown-docx-export
 description: Используй, когда Markdown-документ нужно опубликовать как читаемый .docx для коллег или руководства — .docx всегда производный артефакт, не редактируемый источник.
-harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
+harness: org@0e0eca19135133b995f4a6e61b0d0f22d702baee
 ---
 # Markdown → DocX export
 

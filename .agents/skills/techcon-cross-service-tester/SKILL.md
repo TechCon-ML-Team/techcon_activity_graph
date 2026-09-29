@@ -2,7 +2,7 @@
 name: techcon-cross-service-tester
 description: Пишет и валидирует кросс-сервисные E2E интеграционные тесты между сервисами TechCon-экосистемы (upload -> classify -> detect -> search -> render). Применяй, когда нужно найти конкретный сломанный контракт между двумя сервисами, а не просто зафиксировать что тест упал.
 allowed-tools: Bash(pytest:*), Bash(httpx:*)
-harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
+harness: org@0e0eca19135133b995f4a6e61b0d0f22d702baee
 ---
 # Кросс-сервисный тестировщик TechCon
 

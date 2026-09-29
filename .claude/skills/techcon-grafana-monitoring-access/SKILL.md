@@ -1,7 +1,7 @@
 ---
 name: techcon-grafana-monitoring-access
 description: Используй при проверке живого состояния мониторинга (Grafana, Alertmanager, Homer, Gatus, GlitchTip) — когда нужно отделить живую истину дашбордов от документов, найти дубли и устаревшие поверхности, подготовить вывод, готовый для оператора.
-harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
+harness: org@0e0eca19135133b995f4a6e61b0d0f22d702baee
 ---
 # Доступ к мониторингу Grafana
 

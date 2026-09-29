@@ -1,7 +1,7 @@
 ---
 name: techcon-git-workflow
 description: Используй перед любым git-коммитом, PR, слиянием веток или промоушном между ветками (feature/develop/main) в репозиториях TechCon — формат коммита, кто и как выполняет слияние, back-merge после хотфикса, привязка к задаче Linear.
-harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
+harness: org@0e0eca19135133b995f4a6e61b0d0f22d702baee
 ---
 # Git workflow — коммиты, полномочия на слияние, back-merge
 

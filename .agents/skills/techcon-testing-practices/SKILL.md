@@ -1,7 +1,7 @@
 ---
 name: techcon-testing-practices
 description: Используй при написании или правке кода в репозиториях TechCon — когда добавлять unit-тест, как измеряется покрытие "код без tests/" (наблюдательный Stop-хук `hooks/tests_coverage.py`), какой стиль тестов принят (golden-тесты `tests/golden/`).
-harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
+harness: org@0e0eca19135133b995f4a6e61b0d0f22d702baee
 ---
 # Практика тестирования — покрытие «код без тестов» и стиль golden-тестов
 

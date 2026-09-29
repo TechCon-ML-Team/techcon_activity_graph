@@ -1,7 +1,7 @@
 ---
 name: techcon-large-session
 description: Используй, когда задача имеет ≥4 независимых частей (адверсарная критика, параллельное исследование, широкий аудит репозитория) — реши, нужен ли Claude Workflow / Codex techcon-fanout, а не цепочка одиночных вызовов агента.
-harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
+harness: org@0e0eca19135133b995f4a6e61b0d0f22d702baee
 ---
 
 # Большие сессии: Workflow / techcon-fanout вместо цепочки агентов

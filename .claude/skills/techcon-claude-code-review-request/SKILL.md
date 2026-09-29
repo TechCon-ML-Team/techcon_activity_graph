@@ -2,7 +2,7 @@
 name: techcon-claude-code-review-request
 description: Запрос активного ревью у другого агента/ревьюера — создаёт brief с файлами, endpoint'ами, командами и требованиями к доступу. Применять перед архитектурными изменениями, миграциями или по прямому запросу критики.
 allowed-tools: Read, Write, Grep, Glob
-harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
+harness: org@0e0eca19135133b995f4a6e61b0d0f22d702baee
 ---
 # Запрос активного ревью
 

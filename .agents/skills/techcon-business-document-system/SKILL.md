@@ -1,7 +1,7 @@
 ---
 name: techcon-business-document-system
 description: Используй при создании, правке или синхронизации бизнес-документов (стратегии, отчёты для стейкхолдеров, презентации), чтобы не смешивать их с инженерной документацией репозитория и не терять источник правды.
-harness: org@1c27b221b7da9d553ea28888a71aa27c1fa29d91
+harness: org@0e0eca19135133b995f4a6e61b0d0f22d702baee
 ---
 # Business document system
 

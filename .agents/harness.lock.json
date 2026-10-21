@@ -18,7 +18,7 @@
     ".agents/skills/techcon-docs-language/references/dictionary.md": "4b2c1962969383af49c69d8024c1218d1c710c47d179956725070079d1622a39",
     ".agents/skills/techcon-external-report-authoring/SKILL.md": "97a611feae335149d42c110f838baa525a89baca0ff1752e1ef7c24acef59e2e",
     ".agents/skills/techcon-fact-verification/SKILL.md": "04f380ef83af4ad72451f92e5112d4da5753832f85ce42ec620f695f95cc3eec",
-    ".agents/skills/techcon-git-workflow/SKILL.md": "6fcd049925c680ffc190a4abf3fff6c53f54c94c6ae5138469c760b123a79fb5",
+    ".agents/skills/techcon-git-workflow/SKILL.md": "c61caf19ddd8aeaff420e309edb673f14028802e5d6c4e2cbdcc856738895a1f",
     ".agents/skills/techcon-grafana-monitoring-access/SKILL.md": "b811e120ecb56a068f19f9ab14a3a11de196fac9322cb6af94394541d20957c6",
     ".agents/skills/techcon-infra-access-map/SKILL.md": "d92526fd143259e1fd58d3e935dc8faca3d4ba9c3ec1f931e9998141ee634bc4",
     ".agents/skills/techcon-infra-access/SKILL.md": "9a922b37d28fb56085ccb08d8c9898e397c41d643aea3bd749a3f763b8f3ace7",
@@ -66,7 +66,7 @@
     ".claude/skills/techcon-docs-language/references/dictionary.md": "4b2c1962969383af49c69d8024c1218d1c710c47d179956725070079d1622a39",
     ".claude/skills/techcon-external-report-authoring/SKILL.md": "97a611feae335149d42c110f838baa525a89baca0ff1752e1ef7c24acef59e2e",
     ".claude/skills/techcon-fact-verification/SKILL.md": "04f380ef83af4ad72451f92e5112d4da5753832f85ce42ec620f695f95cc3eec",
-    ".claude/skills/techcon-git-workflow/SKILL.md": "6fcd049925c680ffc190a4abf3fff6c53f54c94c6ae5138469c760b123a79fb5",
+    ".claude/skills/techcon-git-workflow/SKILL.md": "c61caf19ddd8aeaff420e309edb673f14028802e5d6c4e2cbdcc856738895a1f",
     ".claude/skills/techcon-grafana-monitoring-access/SKILL.md": "b811e120ecb56a068f19f9ab14a3a11de196fac9322cb6af94394541d20957c6",
     ".claude/skills/techcon-infra-access-map/SKILL.md": "d92526fd143259e1fd58d3e935dc8faca3d4ba9c3ec1f931e9998141ee634bc4",
     ".claude/skills/techcon-infra-access/SKILL.md": "9a922b37d28fb56085ccb08d8c9898e397c41d643aea3bd749a3f763b8f3ace7",
@@ -100,6 +100,12 @@
   "harness_sha": "0e0eca19135133b995f4a6e61b0d0f22d702baee",
   "repo": "techcon_activity_graph",
   "schema_version": "1.0.0",
+  "skill_sources": {
+    "techcon-git-workflow": {
+      "harness_sha": "a4935cf81ee546b9572949b38acabc2546db9a4f",
+      "source_hash": "eb7df47ebf7ff8061f6ee2ad670d27970efb27fd63ebb7bb4dbb698c70002920"
+    }
+  },
   "skills": {
     "techcon-alert-export": "1751cb80b7aa85ff2b08089c8e704b126481f5fe7a1d32e516b0d960786dd9c2",
     "techcon-architecture-boundaries-template": "26c520c662b3a1f50d1be441f4ad53ddfad150fe9ec0c80ab45d39f8bcd58405",
@@ -115,7 +121,7 @@
     "techcon-docs-language": "0b00f99ad0d6ab061a2625852a111360198d7c20211acdb24661ac927ea4ce15",
     "techcon-external-report-authoring": "bc99b1d241faaac7cf3ee39a5c858d5f600bba3b03eed3eb13eff57192756855",
     "techcon-fact-verification": "a60d6bd491e38d5f23701263219f0eed8e864674a75fd5d768e3a3c2c365c0e8",
-    "techcon-git-workflow": "c8ef1d90e7ebee9df7c2a97258269f9c4119ddfe5803d2b1022dd079e2d5b3fc",
+    "techcon-git-workflow": "eb7df47ebf7ff8061f6ee2ad670d27970efb27fd63ebb7bb4dbb698c70002920",
     "techcon-grafana-monitoring-access": "db0250155ea7af2e6be9ba19fa4c15a9dd889af4ca6b0d2edbb9f45233ec3c2b",
     "techcon-infra-access": "5a11bdbca6c7abb250224bb25ce1ef2e93ddb26e8679401d5c58bcf57f48c533",
     "techcon-infra-access-map": "80a9bf08b2731174b552d4efc0d1e9d0bfcd2efa3153e1588b47a0133c6bc037",
